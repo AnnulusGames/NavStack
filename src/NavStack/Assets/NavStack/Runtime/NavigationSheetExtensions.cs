@@ -13,7 +13,7 @@ namespace NavStack
             return navigationSheet.ShowAsync(index, navigationSheet.DefaultOptions, cancellationToken);
         }
 
-        public static UniTask RegisterNewObjectAsync<T>(this INavigationSheet navigationSheet, T prefab, CancellationToken cancellationToken = default)
+        public static UniTask AddNewObjectAsync<T>(this INavigationSheet navigationSheet, T prefab, CancellationToken cancellationToken = default)
             where T : UnityEngine.Object, IPage
         {
             var instance = UnityEngine.Object.Instantiate(prefab);
@@ -22,25 +22,25 @@ namespace NavStack
                 instance.LifecycleEvents.Add(new DestroyObjectEvent(component.gameObject));
             }
 
-            return navigationSheet.RegisterAsync(instance, cancellationToken);
+            return navigationSheet.AddAsync(instance, cancellationToken);
         }
 
-        public static UniTask RegisterNewObjectAsync(this INavigationSheet navigationSheet, string key, CancellationToken cancellationToken = default)
+        public static UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, CancellationToken cancellationToken = default)
         {
-            return RegisterNewObjectAsync(navigationSheet, key, ResourceProvider.DefaultResourceProvider, cancellationToken);
+            return AddNewObjectAsync(navigationSheet, key, ResourceProvider.DefaultResourceProvider, cancellationToken);
         }
 
-        public static UniTask RegisterNewObjectAsync(this INavigationSheet navigationSheet, string key, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, NavigationOptions options, CancellationToken cancellationToken = default)
         {
-            return RegisterNewObjectAsync(navigationSheet, key, ResourceProvider.DefaultResourceProvider, options, cancellationToken);
+            return AddNewObjectAsync(navigationSheet, key, ResourceProvider.DefaultResourceProvider, options, cancellationToken);
         }
 
-        public static UniTask RegisterNewObjectAsync(this INavigationSheet navigationSheet, string key, IResourceProvider resourceProvider, CancellationToken cancellationToken = default)
+        public static UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, IResourceProvider resourceProvider, CancellationToken cancellationToken = default)
         {
-            return RegisterNewObjectAsync(navigationSheet, key, resourceProvider, navigationSheet.DefaultOptions, cancellationToken);
+            return AddNewObjectAsync(navigationSheet, key, resourceProvider, navigationSheet.DefaultOptions, cancellationToken);
         }
 
-        public static async UniTask RegisterNewObjectAsync(this INavigationSheet navigationSheet, string key, IResourceProvider resourceProvider, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static async UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, IResourceProvider resourceProvider, NavigationOptions options, CancellationToken cancellationToken = default)
         {
             var resource = await resourceProvider.LoadAsync<UnityEngine.Object>(key, cancellationToken);
 
@@ -49,7 +49,7 @@ namespace NavStack
 
             page.LifecycleEvents.Add(new ResourceUnloadEvent(page, resource, instance, resourceProvider));
 
-            await navigationSheet.RegisterAsync(page, cancellationToken);
+            await navigationSheet.AddAsync(page, cancellationToken);
         }
 
         public static UniTask HideAsync(this INavigationSheet navigation, CancellationToken cancellationToken = default)

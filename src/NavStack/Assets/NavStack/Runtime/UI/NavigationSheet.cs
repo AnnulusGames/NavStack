@@ -69,19 +69,19 @@ namespace NavStack.UI
             CallbackReceivers.Add(new CallbackReceiver() { NavigationSheet = this });
         }
 
-        public UniTask RegisterAsync(IPage page, CancellationToken cancellationToken = default)
+        public UniTask AddAsync(IPage page, CancellationToken cancellationToken = default)
         {
-            return core.RegisterAsync(page, cancellationToken);
+            return core.AddAsync(page, cancellationToken);
         }
 
-        public UniTask UnregisterAsync(IPage page, CancellationToken cancellationToken = default)
+        public UniTask RemoveAsync(IPage page, CancellationToken cancellationToken = default)
         {
-            return core.UnregisterAsync(page, cancellationToken);
+            return core.RemoveAsync(page, cancellationToken);
         }
 
-        public UniTask UnregisterAllAsync(CancellationToken cancellationToken = default)
+        public UniTask RemoveAllAsync(CancellationToken cancellationToken = default)
         {
-            return core.UnregisterAllAsync(cancellationToken);
+            return core.RemoveAllAsync(cancellationToken);
         }
 
         public UniTask ShowAsync(int index, NavigationOptions options, CancellationToken cancellationToken = default)

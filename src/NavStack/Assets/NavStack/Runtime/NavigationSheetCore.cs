@@ -18,13 +18,13 @@ namespace NavStack
 
         bool isRunning;
 
-        public async UniTask RegisterAsync(IPage page, CancellationToken cancellationToken = default)
+        public async UniTask AddAsync(IPage page, CancellationToken cancellationToken = default)
         {
             await NavigationHelper.InvokeOnInitialize(page, callbackReceivers, cancellationToken);
             pages.Add(page);
         }
 
-        public async UniTask UnregisterAsync(IPage page, CancellationToken cancellationToken = default)
+        public async UniTask RemoveAsync(IPage page, CancellationToken cancellationToken = default)
         {
             if (page == null) throw new ArgumentNullException(nameof(page));
 
@@ -34,7 +34,7 @@ namespace NavStack
             await NavigationHelper.InvokeOnCleanup(page, callbackReceivers, cancellationToken);
         }
 
-        public UniTask UnregisterAllAsync(CancellationToken cancellationToken = default)
+        public UniTask RemoveAllAsync(CancellationToken cancellationToken = default)
         {
             var array = new UniTask[pages.Count];
             for (int i = 0; i < pages.Count; i++)
