@@ -13,7 +13,7 @@ NavStack is a library for managing screen transitions in Unity. It provides a fo
 ### Requirements
 
 * Unity 2021.3 or later
-* UniTask 2.0.0 or later
+* [UniTask](https://github.com/Cysharp/UniTask) 2.0.0 or later
 
 ### Installation
 
