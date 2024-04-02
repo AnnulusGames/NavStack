@@ -200,9 +200,7 @@ public class SamplePage1 : Page
         if (!options.Animated)
         {
             canvasGroup.alpha = 0f;
-            return
-
-;
+            return;
         }
 
         await LMotion.Create(1f, 0f, 0.25f)
