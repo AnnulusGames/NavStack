@@ -18,7 +18,7 @@ namespace NavStack
             return navigationStack.PushAsync(factory, navigationStack.DefaultOptions, cancellationToken);
         }
 
-        public static UniTask PushNewObject<T>(this INavigationStack navigationStack, T prefab, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static UniTask PushNewObjectAsync<T>(this INavigationStack navigationStack, T prefab, NavigationOptions options, CancellationToken cancellationToken = default)
             where T : UnityEngine.Object, IPage
         {
             return navigationStack.PushAsync(() =>
@@ -35,7 +35,7 @@ namespace NavStack
         public static UniTask PushNewObjectAsync<T>(this INavigationStack navigationStack, T prefab, CancellationToken cancellationToken = default)
             where T : UnityEngine.Object, IPage
         {
-            return PushNewObject(navigationStack, prefab, navigationStack.DefaultOptions, cancellationToken);
+            return PushNewObjectAsync(navigationStack, prefab, navigationStack.DefaultOptions, cancellationToken);
         }
 
         public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, CancellationToken cancellationToken = default)
