@@ -6,8 +6,8 @@ namespace NavStack
 {
     public interface INavigationStack : INavigation
     {
-        UniTask PushAsync(IPage page, NavigationOptions options, CancellationToken cancellationToken = default);
-        UniTask PushAsync(Func<UniTask<IPage>> factory, NavigationOptions options, CancellationToken cancellationToken = default);
-        UniTask PopAsync(NavigationOptions options, CancellationToken cancellationToken = default);
+        UniTask PushAsync(IPage page, NavigationContext context, CancellationToken cancellationToken = default);
+        UniTask PushAsync(Func<UniTask<IPage>> factory, NavigationContext context, CancellationToken cancellationToken = default);
+        UniTask PopAsync(NavigationContext context, CancellationToken cancellationToken = default);
     }
 }

@@ -15,14 +15,14 @@ namespace NavStack.UI
         [SerializeField] PlayableAsset onAppearAnimation;
         [SerializeField] PlayableAsset onDisappearAnimation;
 
-        protected override UniTask OnAppearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+        protected override UniTask OnAppearCore(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return PlayAsync(onAppearAnimation, options, cancellationToken);
+            return PlayAsync(onAppearAnimation, context.Options, cancellationToken);
         }
 
-        protected override UniTask OnDisappearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+        protected override UniTask OnDisappearCore(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return PlayAsync(onDisappearAnimation, options, cancellationToken);
+            return PlayAsync(onDisappearAnimation, context.Options, cancellationToken);
         }
 
         async UniTask PlayAsync(PlayableAsset asset, NavigationOptions options, CancellationToken cancellationToken)

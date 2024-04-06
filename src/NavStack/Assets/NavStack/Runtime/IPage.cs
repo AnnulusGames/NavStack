@@ -9,7 +9,7 @@ namespace NavStack
         IList<IPageLifecycleEvent> LifecycleEvents { get; }
         UniTask OnInitialize(CancellationToken cancellationToken = default);
         UniTask OnCleanup(CancellationToken cancellationToken = default);
-        UniTask OnAppear(NavigationOptions options, CancellationToken cancellationToken = default);
-        UniTask OnDisappear(NavigationOptions options, CancellationToken cancellationToken = default);
+        UniTask OnAppear(NavigationContext context, CancellationToken cancellationToken = default);
+        UniTask OnDisappear(NavigationContext context, CancellationToken cancellationToken = default);
     }
 }

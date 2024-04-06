@@ -7,14 +7,14 @@ namespace NavStack
 {
     public static class PageObservableExtensions
     {
-        public static Observable<NavigationOptions> OnAppearAsObservable(this IPage page)
+        public static Observable<NavigationContext> OnAppearAsObservable(this IPage page)
         {
             var e = new OnAppearObservable();
             page.LifecycleEvents.Add(e);
             return e.AsObservable();
         }
 
-        public static Observable<NavigationOptions> OnDisappearAsObservable(this IPage page)
+        public static Observable<NavigationContext> OnDisappearAsObservable(this IPage page)
         {
             var e = new OnDisappearObservable();
             page.LifecycleEvents.Add(e);
@@ -30,12 +30,12 @@ namespace NavStack
 
         sealed class OnAppearObservable : IPageLifecycleEvent
         {
-            readonly Subject<NavigationOptions> subject = new();
-            public Observable<NavigationOptions> AsObservable() => subject;
+            readonly Subject<NavigationContext> subject = new();
+            public Observable<NavigationContext> AsObservable() => subject;
 
-            UniTask IPageLifecycleEvent.OnAppear(NavigationOptions options, CancellationToken cancellationToken)
+            UniTask IPageLifecycleEvent.OnAppear(NavigationContext context, CancellationToken cancellationToken)
             {
-                subject.OnNext(options);
+                subject.OnNext(context);
                 return UniTask.CompletedTask;
             }
 
@@ -48,12 +48,12 @@ namespace NavStack
 
         sealed class OnDisappearObservable : IPageLifecycleEvent
         {
-            readonly Subject<NavigationOptions> subject = new();
-            public Observable<NavigationOptions> AsObservable() => subject;
+            readonly Subject<NavigationContext> subject = new();
+            public Observable<NavigationContext> AsObservable() => subject;
 
-            UniTask IPageLifecycleEvent.OnDisappear(NavigationOptions options, CancellationToken cancellationToken)
+            UniTask IPageLifecycleEvent.OnDisappear(NavigationContext context, CancellationToken cancellationToken)
             {
-                subject.OnNext(options);
+                subject.OnNext(context);
                 return UniTask.CompletedTask;
             }
 

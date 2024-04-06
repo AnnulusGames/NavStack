@@ -10,7 +10,7 @@ namespace NavStack
     {
         public static UniTask ShowAsync(this INavigationSheet navigationSheet, int index, CancellationToken cancellationToken = default)
         {
-            return navigationSheet.ShowAsync(index, navigationSheet.DefaultOptions, cancellationToken);
+            return navigationSheet.ShowAsync(index, new NavigationContext(), cancellationToken);
         }
 
         public static UniTask AddNewObjectAsync<T>(this INavigationSheet navigationSheet, T prefab, CancellationToken cancellationToken = default)
@@ -30,17 +30,17 @@ namespace NavStack
             return AddNewObjectAsync(navigationSheet, key, ResourceProvider.DefaultResourceProvider, cancellationToken);
         }
 
-        public static UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return AddNewObjectAsync(navigationSheet, key, ResourceProvider.DefaultResourceProvider, options, cancellationToken);
+            return AddNewObjectAsync(navigationSheet, key, ResourceProvider.DefaultResourceProvider, context, cancellationToken);
         }
 
         public static UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, IResourceProvider resourceProvider, CancellationToken cancellationToken = default)
         {
-            return AddNewObjectAsync(navigationSheet, key, resourceProvider, navigationSheet.DefaultOptions, cancellationToken);
+            return AddNewObjectAsync(navigationSheet, key, resourceProvider, new NavigationContext(), cancellationToken);
         }
 
-        public static async UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, IResourceProvider resourceProvider, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static async UniTask AddNewObjectAsync(this INavigationSheet navigationSheet, string key, IResourceProvider resourceProvider, NavigationContext context, CancellationToken cancellationToken = default)
         {
             var resource = await resourceProvider.LoadAsync<UnityEngine.Object>(key, cancellationToken);
 
@@ -52,9 +52,9 @@ namespace NavStack
             await navigationSheet.AddAsync(page, cancellationToken);
         }
 
-        public static UniTask HideAsync(this INavigationSheet navigation, CancellationToken cancellationToken = default)
+        public static UniTask HideAsync(this INavigationSheet navigationSheet, CancellationToken cancellationToken = default)
         {
-            return navigation.HideAsync(navigation.DefaultOptions, cancellationToken);
+            return navigationSheet.HideAsync(new NavigationContext(), cancellationToken);
         }
 
         static bool TryGetComponent<T>(UnityEngine.Object obj, out T result)

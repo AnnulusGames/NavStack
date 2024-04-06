@@ -9,6 +9,8 @@ namespace NavStack
         public NavigationOptions() { }
         public NavigationOptions(NavigationOptions source)
         {
+            if (source == null) return;
+            
             animated = source.animated;
             awaitOperation = source.awaitOperation;
         }

@@ -49,11 +49,14 @@ namespace NavStack
             return UniTask.WhenAll(array);
         }
 
-        public async UniTask ShowAsync(int index, NavigationOptions options, CancellationToken cancellationToken = default)
+        public async UniTask ShowAsync(INavigation navigation, int index, NavigationContext context, CancellationToken cancellationToken = default)
         {
+            var copiedContext = context.CreateCopy();
+            copiedContext.Options = context.Options ?? navigation.DefaultOptions;
+
             if (isRunning)
             {
-                switch (options.AwaitOperation)
+                switch (copiedContext.Options.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");
@@ -74,8 +77,8 @@ namespace NavStack
 
                 var task1 = activePage == null
                     ? UniTask.CompletedTask
-                    : NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, options, cancellationToken);
-                var task2 = NavigationHelper.InvokeOnAppear(page, callbackReceivers, options, cancellationToken);
+                    : NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, copiedContext, cancellationToken);
+                var task2 = NavigationHelper.InvokeOnAppear(page, callbackReceivers, copiedContext, cancellationToken);
 
                 await UniTask.WhenAll(task1, task2);
 
@@ -87,8 +90,11 @@ namespace NavStack
             }
         }
 
-        public async UniTask HideAsync(NavigationOptions options, CancellationToken cancellationToken = default)
+        public async UniTask HideAsync(INavigation navigation, NavigationContext context, CancellationToken cancellationToken = default)
         {
+            var copiedContext = context.CreateCopy();
+            copiedContext.Options = context.Options ?? navigation.DefaultOptions;
+
             if (activePage == null)
             {
                 throw new InvalidOperationException(); // TODO: add message
@@ -96,7 +102,7 @@ namespace NavStack
 
             if (isRunning)
             {
-                switch (options.AwaitOperation)
+                switch (copiedContext.Options.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");
@@ -112,7 +118,7 @@ namespace NavStack
 
             try
             {
-                await NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, options, cancellationToken);
+                await NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, copiedContext, cancellationToken);
                 activePage = null;
             }
             finally
