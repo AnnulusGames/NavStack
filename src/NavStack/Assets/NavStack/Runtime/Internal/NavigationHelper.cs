@@ -20,17 +20,17 @@ namespace NavStack
 
     internal static class NavigationHelper
     {
-        public static async UniTask InvokeOnAppear(IPage page, List<INavigationCallbackReceiver> callbackReceivers, NavigationOptions options, CancellationToken cancellationToken)
+        public static async UniTask InvokeOnAppear(IPage page, List<INavigationCallbackReceiver> callbackReceivers, NavigationContext context, CancellationToken cancellationToken)
         {
             InvokeCallback(page, callbackReceivers, PageCallbackType.OnBeforeAppear);
-            await page.OnAppear(options, cancellationToken);
+            await page.OnAppear(context, cancellationToken);
             InvokeCallback(page, callbackReceivers, PageCallbackType.OnAfterAppear);
         }
 
-        public static async UniTask InvokeOnDisappear(IPage page, List<INavigationCallbackReceiver> callbackReceivers, NavigationOptions options, CancellationToken cancellationToken)
+        public static async UniTask InvokeOnDisappear(IPage page, List<INavigationCallbackReceiver> callbackReceivers, NavigationContext context, CancellationToken cancellationToken)
         {
             InvokeCallback(page, callbackReceivers, PageCallbackType.OnBeforeDisappear);
-            await page.OnDisappear(options, cancellationToken);
+            await page.OnDisappear(context, cancellationToken);
             InvokeCallback(page, callbackReceivers, PageCallbackType.OnAfterDisappear);
         }
 

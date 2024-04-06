@@ -33,9 +33,9 @@ public class SamplePage1 : Page
         return base.OnInitializeCore(cancellationToken);
     }
 
-    protected override async UniTask OnAppearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+    protected override async UniTask OnAppearCore(NavigationContext context, CancellationToken cancellationToken = default)
     {
-        if (!options.Animated)
+        if (!context.Options.Animated)
         {
             canvasGroup.alpha = 1f;
             return;
@@ -47,9 +47,9 @@ public class SamplePage1 : Page
             .ToUniTask(CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken, cancellationToken).Token);
     }
 
-    protected override async UniTask OnDisappearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+    protected override async UniTask OnDisappearCore(NavigationContext context, CancellationToken cancellationToken = default)
     {
-        if (!options.Animated)
+        if (!context.Options.Animated)
         {
             canvasGroup.alpha = 0f;
             return;

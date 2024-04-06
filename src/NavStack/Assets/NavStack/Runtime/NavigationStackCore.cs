@@ -19,11 +19,11 @@ namespace NavStack
 
         bool isRunning;
 
-        public async UniTask PopAsync(NavigationOptions options, CancellationToken cancellationToken = default)
+        public async UniTask PopAsync(NavigationContext context, CancellationToken cancellationToken = default)
         {
             if (isRunning)
             {
-                switch (options.AwaitOperation)
+                switch (context.Options.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");
@@ -43,10 +43,10 @@ namespace NavStack
                 pageStack.TryPop(out var page);
                 pageStack.TryPeek(out activePage);
 
-                var task1 = NavigationHelper.InvokeOnDisappear(page, callbackReceivers, options, cancellationToken);
+                var task1 = NavigationHelper.InvokeOnDisappear(page, callbackReceivers, context, cancellationToken);
                 var task2 = activePage == null
                     ? UniTask.CompletedTask
-                    : NavigationHelper.InvokeOnAppear(activePage, callbackReceivers, options, cancellationToken);
+                    : NavigationHelper.InvokeOnAppear(activePage, callbackReceivers, context, cancellationToken);
 
                 await UniTask.WhenAll(task1, task2);
 
@@ -58,11 +58,11 @@ namespace NavStack
             }
         }
 
-        public async UniTask PushAsync(Func<UniTask<IPage>> pageFactory, NavigationOptions options, CancellationToken cancellationToken = default)
+        public async UniTask PushAsync(Func<UniTask<IPage>> pageFactory, NavigationContext context, CancellationToken cancellationToken = default)
         {
             if (isRunning)
             {
-                switch (options.AwaitOperation)
+                switch (context.Options.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");
@@ -83,8 +83,8 @@ namespace NavStack
 
                 var task1 = activePage == null
                     ? UniTask.CompletedTask
-                    : NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, options, cancellationToken);
-                var task2 = NavigationHelper.InvokeOnAppear(page, callbackReceivers, options, cancellationToken);
+                    : NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, context, cancellationToken);
+                var task2 = NavigationHelper.InvokeOnAppear(page, callbackReceivers, context, cancellationToken);
 
                 await UniTask.WhenAll(task1, task2);
 

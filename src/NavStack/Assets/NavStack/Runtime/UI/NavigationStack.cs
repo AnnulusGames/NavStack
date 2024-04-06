@@ -65,19 +65,19 @@ namespace NavStack.UI
             CallbackReceivers.Add(new CallbackReceiver() { NavigationStack = this });
         }
 
-        public UniTask PopAsync(NavigationOptions options, CancellationToken cancellationToken = default)
+        public UniTask PopAsync(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.PopAsync(options, cancellationToken);
+            return core.PopAsync(context, cancellationToken);
         }
 
-        public UniTask PushAsync(IPage page, NavigationOptions options, CancellationToken cancellationToken = default)
+        public UniTask PushAsync(IPage page, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.PushAsync(() => new(page), options, cancellationToken);
+            return core.PushAsync(() => new(page), context, cancellationToken);
         }
 
-        public UniTask PushAsync(Func<UniTask<IPage>> factory, NavigationOptions options, CancellationToken cancellationToken = default)
+        public UniTask PushAsync(Func<UniTask<IPage>> factory, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.PushAsync(factory, options, cancellationToken);
+            return core.PushAsync(factory, context, cancellationToken);
         }
     }
 }

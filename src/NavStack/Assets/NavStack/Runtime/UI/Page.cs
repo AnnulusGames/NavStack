@@ -52,7 +52,7 @@ namespace NavStack.UI
             await OnCleanupCore(cancellationToken);
         }
 
-        public async UniTask OnDisappear(NavigationOptions options, CancellationToken cancellationToken = default)
+        public async UniTask OnDisappear(NavigationContext context, CancellationToken cancellationToken = default)
         {
             var array = ArrayPool<IPageLifecycleEvent>.Shared.Rent(events.Count);
             try
@@ -60,7 +60,7 @@ namespace NavStack.UI
                 events.CopyTo(array);
                 for (int i = 0; i < events.Count; i++)
                 {
-                    await array[i].OnDisappear(options, cancellationToken);
+                    await array[i].OnDisappear(context, cancellationToken);
                 }
             }
             finally
@@ -68,10 +68,10 @@ namespace NavStack.UI
                 ArrayPool<IPageLifecycleEvent>.Shared.Return(array);
             }
 
-            await OnDisappearCore(options, cancellationToken);
+            await OnDisappearCore(context, cancellationToken);
         }
 
-        public async UniTask OnAppear(NavigationOptions options, CancellationToken cancellationToken = default)
+        public async UniTask OnAppear(NavigationContext context, CancellationToken cancellationToken = default)
         {
             var array = ArrayPool<IPageLifecycleEvent>.Shared.Rent(events.Count);
             try
@@ -79,7 +79,7 @@ namespace NavStack.UI
                 events.CopyTo(array);
                 for (int i = 0; i < events.Count; i++)
                 {
-                    await array[i].OnAppear(options, cancellationToken);
+                    await array[i].OnAppear(context, cancellationToken);
                 }
             }
             finally
@@ -87,7 +87,7 @@ namespace NavStack.UI
                 ArrayPool<IPageLifecycleEvent>.Shared.Return(array);
             }
 
-            await OnAppearCore(options, cancellationToken);
+            await OnAppearCore(context, cancellationToken);
         }
 
         protected virtual UniTask OnInitializeCore(CancellationToken cancellationToken = default)
@@ -100,12 +100,12 @@ namespace NavStack.UI
             return UniTask.CompletedTask;
         }
 
-        protected virtual UniTask OnAppearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+        protected virtual UniTask OnAppearCore(NavigationContext context, CancellationToken cancellationToken = default)
         {
             return UniTask.CompletedTask;
         }
 
-        protected virtual UniTask OnDisappearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+        protected virtual UniTask OnDisappearCore(NavigationContext context, CancellationToken cancellationToken = default)
         {
             return UniTask.CompletedTask;
         }

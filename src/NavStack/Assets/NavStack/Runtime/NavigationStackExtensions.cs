@@ -10,15 +10,15 @@ namespace NavStack
     {
         public static UniTask PushAsync(this INavigationStack navigationStack, IPage page, CancellationToken cancellationToken = default)
         {
-            return navigationStack.PushAsync(page, navigationStack.DefaultOptions, cancellationToken);
+            return navigationStack.PushAsync(page, new NavigationContext(), cancellationToken);
         }
 
         public static UniTask PushAsync(this INavigationStack navigationStack, Func<UniTask<IPage>> factory, CancellationToken cancellationToken = default)
         {
-            return navigationStack.PushAsync(factory, navigationStack.DefaultOptions, cancellationToken);
+            return navigationStack.PushAsync(factory, new NavigationContext(), cancellationToken);
         }
 
-        public static UniTask PushNewObjectAsync<T>(this INavigationStack navigationStack, T prefab, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static UniTask PushNewObjectAsync<T>(this INavigationStack navigationStack, T prefab, NavigationContext context, CancellationToken cancellationToken = default)
             where T : UnityEngine.Object, IPage
         {
             return navigationStack.PushAsync(() =>
@@ -29,13 +29,13 @@ namespace NavStack
                     instance.LifecycleEvents.Add(new DestroyObjectEvent(component.gameObject));
                 }
                 return new(instance);
-            }, options, cancellationToken);
+            }, context, cancellationToken);
         }
 
         public static UniTask PushNewObjectAsync<T>(this INavigationStack navigationStack, T prefab, CancellationToken cancellationToken = default)
             where T : UnityEngine.Object, IPage
         {
-            return PushNewObjectAsync(navigationStack, prefab, navigationStack.DefaultOptions, cancellationToken);
+            return PushNewObjectAsync(navigationStack, prefab, new NavigationContext(), cancellationToken);
         }
 
         public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, CancellationToken cancellationToken = default)
@@ -43,27 +43,22 @@ namespace NavStack
             return PushNewObjectAsync(navigationStack, key, ResourceProvider.DefaultResourceProvider, cancellationToken);
         }
 
-        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return PushNewObjectAsync(navigationStack, key, ResourceProvider.DefaultResourceProvider, options, cancellationToken);
+            return PushNewObjectAsync(navigationStack, key, ResourceProvider.DefaultResourceProvider, context, cancellationToken);
         }
 
         public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, IResourceProvider resourceProvider, CancellationToken cancellationToken = default)
         {
-            return navigationStack.PushAsync(async () =>
+            var context = new NavigationContext
             {
-                var resource = await resourceProvider.LoadAsync<UnityEngine.Object>(key, cancellationToken);
+                Options = navigationStack.DefaultOptions
+            };
 
-                var instance = UnityEngine.Object.Instantiate(resource);
-                if (!TryGetComponent<IPage>(instance, out var page)) throw new Exception(); // TODO:
-
-                page.LifecycleEvents.Add(new ResourceUnloadEvent(page, resource, instance, resourceProvider));
-
-                return page;
-            }, navigationStack.DefaultOptions, cancellationToken);
+            return PushNewObjectAsync(navigationStack, key, resourceProvider, context, cancellationToken);
         }
 
-        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, IResourceProvider resourceProvider, NavigationOptions options, CancellationToken cancellationToken = default)
+        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, IResourceProvider resourceProvider, NavigationContext context, CancellationToken cancellationToken = default)
         {
             return navigationStack.PushAsync(async () =>
             {
@@ -75,12 +70,12 @@ namespace NavStack
                 page.LifecycleEvents.Add(new ResourceUnloadEvent(page, resource, instance, resourceProvider));
 
                 return page;
-            }, options, cancellationToken);
+            }, context, cancellationToken);
         }
 
-        public static UniTask PopAsync(this INavigationStack navigation, CancellationToken cancellationToken = default)
+        public static UniTask PopAsync(this INavigationStack navigationStack, CancellationToken cancellationToken = default)
         {
-            return navigation.PopAsync(navigation.DefaultOptions, cancellationToken);
+            return navigationStack.PopAsync(new NavigationContext(), cancellationToken);
         }
 
         static bool TryGetComponent<T>(UnityEngine.Object obj, out T result)

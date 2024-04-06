@@ -84,14 +84,14 @@ namespace NavStack.UI
             return core.RemoveAllAsync(cancellationToken);
         }
 
-        public UniTask ShowAsync(int index, NavigationOptions options, CancellationToken cancellationToken = default)
+        public UniTask ShowAsync(int index, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.ShowAsync(index, options, cancellationToken);
+            return core.ShowAsync(this, index, context, cancellationToken);
         }
 
-        public UniTask HideAsync(NavigationOptions options, CancellationToken cancellationToken = default)
+        public UniTask HideAsync(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.HideAsync(options, cancellationToken);
+            return core.HideAsync(this, context, cancellationToken);
         }
     }
 }
