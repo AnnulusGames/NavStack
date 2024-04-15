@@ -61,11 +61,11 @@ namespace NavStack.Internal
                 {
                     task2 = navigationAware2.OnNavigatedFrom(copiedContext, cancellationToken);
                 }
-                
+
                 await UniTask.WhenAll(task1, task2);
 
                 OnPageDetached?.Invoke(page);
-                if (page is IPageLifecycle pageLifecycle)
+                if (page is IPageLifecycleEvent pageLifecycle)
                 {
                     await pageLifecycle.OnDetached(cancellationToken);
                 }
@@ -80,7 +80,7 @@ namespace NavStack.Internal
         {
             var copiedContext = context.CreateCopy();
             copiedContext.Options = context.Options ?? navigation.DefaultOptions;
-            
+
             if (isRunning)
             {
                 switch (copiedContext.Options.AwaitOperation)
@@ -102,7 +102,7 @@ namespace NavStack.Internal
                 var page = await pageFactory();
 
                 OnPageAttached?.Invoke(page);
-                if (page is IPageLifecycle pageLifecycle)
+                if (page is IPageLifecycleEvent pageLifecycle)
                 {
                     await pageLifecycle.OnAttached(cancellationToken);
                 }

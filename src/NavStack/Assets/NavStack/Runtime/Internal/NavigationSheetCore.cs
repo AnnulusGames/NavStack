@@ -21,7 +21,7 @@ namespace NavStack.Internal
         public async UniTask AddAsync(IPage page, CancellationToken cancellationToken = default)
         {
             OnPageAttached?.Invoke(page);
-            if (page is IPageLifecycle lifecycle)
+            if (page is IPageLifecycleEvent lifecycle)
             {
                 await lifecycle.OnAttached(cancellationToken);
             }
@@ -37,7 +37,7 @@ namespace NavStack.Internal
             if (!remove) throw new InvalidOperationException(); // TODO: add message
 
             OnPageDetached?.Invoke(page);
-            if (page is IPageLifecycle lifecycle)
+            if (page is IPageLifecycleEvent lifecycle)
             {
                 await lifecycle.OnDetached(cancellationToken);
             }
@@ -50,7 +50,7 @@ namespace NavStack.Internal
             {
                 var page = pages[i];
                 OnPageDetached?.Invoke(page); // TODO: fix callback timing
-                array[i] = page is IPageLifecycle lifecycle ? lifecycle.OnDetached(cancellationToken) : UniTask.CompletedTask;
+                array[i] = page is IPageLifecycleEvent lifecycle ? lifecycle.OnDetached(cancellationToken) : UniTask.CompletedTask;
             }
 
             activePage = null;
