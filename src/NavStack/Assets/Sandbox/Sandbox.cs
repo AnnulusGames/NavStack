@@ -7,7 +7,6 @@ using NavStack.Content;
 public class Sandbox : MonoBehaviour
 {
     [SerializeField] NavigationStack navigation;
-    [SerializeField] Page prefab;
 
     void Update()
     {
