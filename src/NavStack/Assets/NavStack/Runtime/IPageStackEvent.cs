@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 
 namespace NavStack
 {
-    public interface INavigationStackEvent
+    public interface IPageStackEvent
     {
         UniTask OnPush(NavigationContext context, CancellationToken cancellationToken = default);
         UniTask OnPop(NavigationContext context, CancellationToken cancellationToken = default);

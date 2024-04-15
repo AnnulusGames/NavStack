@@ -3,13 +3,15 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using NavStack;
-using NavStack.UI;
 using LitMotion;
 using LitMotion.Extensions;
 
-public class SamplePage1 : Page, INavigationStackEvent
+public class SamplePage1 : MonoBehaviour, IPage, IPageStackEvent
 {
     [SerializeField] Text text;
+    
+    public UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default) => UniTask.CompletedTask;
+    public UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default) => UniTask.CompletedTask;
 
     public async UniTask OnPush(NavigationContext context, CancellationToken cancellationToken = default)
     {

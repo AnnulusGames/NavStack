@@ -44,23 +44,14 @@ namespace NavStack.Internal
             {
                 if (pageStack.Count == 0) throw new InvalidOperationException("Empty stack");
                 pageStack.TryPop(out var page);
-                if (page is INavigationStackEvent navigationStackEvent)
+                if (page is IPageStackEvent stackEvent)
                 {
-                    await navigationStackEvent.OnPop(copiedContext, cancellationToken);
+                    await stackEvent.OnPop(copiedContext, cancellationToken);
                 }
                 pageStack.TryPeek(out activePage);
 
-                var task1 = UniTask.CompletedTask;
-                if (page is INavigationAware navigationAware1)
-                {
-                    task1 = navigationAware1.OnNavigatedTo(copiedContext, cancellationToken);
-                }
-
-                var task2 = UniTask.CompletedTask;
-                if (activePage is INavigationAware navigationAware2)
-                {
-                    task2 = navigationAware2.OnNavigatedFrom(copiedContext, cancellationToken);
-                }
+                var task1 = page.OnNavigatedTo(copiedContext, cancellationToken);
+                var task2 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedFrom(copiedContext, cancellationToken);
 
                 await UniTask.WhenAll(task1, task2);
 
@@ -108,24 +99,15 @@ namespace NavStack.Internal
                 }
 
                 pageStack.Push(page);
-                if (page is INavigationStackEvent navigationStackEvent)
+                if (page is IPageStackEvent navigationStackEvent)
                 {
                     await navigationStackEvent.OnPush(copiedContext, cancellationToken);
                 }
                 activePage = page;
 
-                var task1 = UniTask.CompletedTask;
-                if (activePage is INavigationAware navigationAware1)
-                {
-                    task1 = navigationAware1.OnNavigatedTo(copiedContext, cancellationToken);
-                }
-
-                var task2 = UniTask.CompletedTask;
-                if (page is INavigationAware navigationAware2)
-                {
-                    task2 = navigationAware2.OnNavigatedFrom(copiedContext, cancellationToken);
-                }
-
+                var task1 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedTo(copiedContext, cancellationToken);
+                var task2 = activePage.OnNavigatedFrom(copiedContext, cancellationToken);
+                
                 await UniTask.WhenAll(task1, task2);
 
             }
