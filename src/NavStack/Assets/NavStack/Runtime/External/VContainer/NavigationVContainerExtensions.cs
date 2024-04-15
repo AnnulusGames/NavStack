@@ -11,18 +11,11 @@ namespace NavStack
             builder.RegisterInstance(navigation);
             builder.RegisterBuildCallback(resolver =>
             {
-                navigation.CallbackReceivers.Add(new InjectCallbackReceiver() { Resolver = resolver });
+                navigation.OnPageAttached += page =>
+                {
+                    resolver.Inject(page);
+                };
             });
-        }
-
-        sealed class InjectCallbackReceiver : INavigationCallbackReceiver
-        {
-            public IObjectResolver Resolver { get; set; }
-
-            public void OnBeforeInitialize(IPage page)
-            {
-                Resolver.Inject(page);
-            }
         }
     }
 }

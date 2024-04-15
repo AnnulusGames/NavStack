@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace NavStack
+namespace NavStack.Internal
 {
-    internal sealed class NavigationSheetCore
+    public sealed class NavigationSheetCore
     {
         public IPage ActivePage => activePage;
         IPage activePage;
@@ -13,14 +13,19 @@ namespace NavStack
         public IReadOnlyCollection<IPage> Pages => pages;
         readonly List<IPage> pages = new();
 
-        public IList<INavigationCallbackReceiver> CallbackReceivers => callbackReceivers;
-        readonly List<INavigationCallbackReceiver> callbackReceivers = new();
+        public event Action<IPage> OnPageAttached;
+        public event Action<IPage> OnPageDetached;
 
         bool isRunning;
 
         public async UniTask AddAsync(IPage page, CancellationToken cancellationToken = default)
         {
-            await NavigationHelper.InvokeOnInitialize(page, callbackReceivers, cancellationToken);
+            OnPageAttached?.Invoke(page);
+            if (page is IPageLifecycle lifecycle)
+            {
+                await lifecycle.OnAttached(cancellationToken);
+            }
+
             pages.Add(page);
         }
 
@@ -31,7 +36,11 @@ namespace NavStack
             var remove = pages.Remove(page);
             if (!remove) throw new InvalidOperationException(); // TODO: add message
 
-            await NavigationHelper.InvokeOnCleanup(page, callbackReceivers, cancellationToken);
+            OnPageDetached?.Invoke(page);
+            if (page is IPageLifecycle lifecycle)
+            {
+                await lifecycle.OnDetached(cancellationToken);
+            }
         }
 
         public UniTask RemoveAllAsync(CancellationToken cancellationToken = default)
@@ -40,7 +49,8 @@ namespace NavStack
             for (int i = 0; i < pages.Count; i++)
             {
                 var page = pages[i];
-                array[i] = NavigationHelper.InvokeOnCleanup(page, callbackReceivers, cancellationToken);
+                OnPageDetached?.Invoke(page); // TODO: fix callback timing
+                array[i] = page is IPageLifecycle lifecycle ? lifecycle.OnDetached(cancellationToken) : UniTask.CompletedTask;
             }
 
             activePage = null;
@@ -75,10 +85,17 @@ namespace NavStack
                 var page = pages[index];
                 if (activePage == page) return;
 
-                var task1 = activePage == null
-                    ? UniTask.CompletedTask
-                    : NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, copiedContext, cancellationToken);
-                var task2 = NavigationHelper.InvokeOnAppear(page, callbackReceivers, copiedContext, cancellationToken);
+                var task1 = UniTask.CompletedTask;
+                if (activePage is INavigationAware navigationAware1)
+                {
+                    task1 = navigationAware1.OnNavigatedTo(copiedContext, cancellationToken);
+                }
+
+                var task2 = UniTask.CompletedTask;
+                if (page is INavigationAware navigationAware2)
+                {
+                    task2 = navigationAware2.OnNavigatedFrom(copiedContext, cancellationToken);
+                }
 
                 await UniTask.WhenAll(task1, task2);
 
@@ -118,7 +135,11 @@ namespace NavStack
 
             try
             {
-                await NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, copiedContext, cancellationToken);
+                if (activePage is INavigationAware navigationAware)
+                {
+                    await navigationAware.OnNavigatedTo(copiedContext, cancellationToken);
+                }
+
                 activePage = null;
             }
             finally
