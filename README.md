@@ -37,48 +37,40 @@ Alternatively, open Packages/manifest.json and add the following to the dependen
 
 ## Basic Concepts
 
-In NavStack, a single screen is divided into units called "Pages." The only requirement for being a Page is implementing the `IPage` interface. You can represent a Page with any object, such as a GameObject, VisualElement, or Scene. (An implementation for uGUI is provided by default.)
+In NavStack, a screen is divided into units called "Pages." The only requirement for a Page is the implementation of the `IPage` interface, allowing any object such as GameObjects, VisualElements, or Scenes to be represented as a Page.
 
-Page transitions and lifecycle management are handled by "Navigation." NavStack provides two types of Navigation: `INavigationStack`, which can stack Page transitions, and `INaviagtionSheet`, which only switches between active Pages without maintaining a history of transitions.
+Screen transitions and lifecycle management are handled by "Navigation." NavStack provides two types of Navigation: `INavigationStack`, which can stack Page transitions, and `INaviagtionSheet`, which switches between active Pages without keeping a history of transitions.
 
 ## Page Lifecycle
 
-The basic interface for a Page, `IPage`, has the following definition. Each event associated with a Page is called by Navigation, allowing you to customize the screen transition process by implementing these methods.
+The `IPage` interface defines the basic events for a Page's lifecycle. Each event is called from the Navigation side, allowing customization of screen transition processes.
 
 ```cs
 public interface IPage
 {
-    IList<IPageLifecycleEvent> LifecycleEvents { get; }
-
-    UniTask OnInitialize(CancellationToken cancellationToken = default);
-    UniTask OnAppear(NavigationOptions options, CancellationToken cancellationToken = default);
-    UniTask OnDisappear(NavigationOptions options, CancellationToken cancellationToken = default);
-    UniTask OnCleanup(CancellationToken cancellationToken = default);
+    UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default);
+    UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default);
 }
 ```
 
-| Event | Description |
-| - | - |
-| OnInitialize | Called once when the Page is initialized. |
-| OnAppear | Called each time the Page becomes visible. |
-| OnDisappear | Called each time the Page becomes hidden. |
-| OnCleanup | Called once when the Page is cleaned up. |
+| Event           | Description                                |
+| --------------- | ------------------------------------------ |
+| OnNavigatedFrom | Called when navigating away from the Page. |
+| OnNavigatedTo   | Called when navigating to the Page.        |
 
-Additionally, you can add callbacks before and after each lifecycle event by implementing objects that implement `IPageLifecycleEvent`.
+Additionally, by implementing `IPageLifecycleEvent`, you can add additional lifecycle events for the Page.
 
 ```cs
 public interface IPageLifecycleEvent
 {
-    UniTask OnInitialize(CancellationToken cancellationToken = default);
-    UniTask OnCleanup(CancellationToken cancellationToken = default);
-    UniTask OnAppear(NavigationOptions options, CancellationToken cancellationToken = default);
-    UniTask OnDisappear(NavigationOptions options, CancellationToken cancellationToken = default);
+    UniTask OnAttached(CancellationToken cancellationToken = default);
+    UniTask OnDetached(CancellationToken cancellationToken = default);
 }
 ```
 
 ## NavigationStack
 
-NavigationStack supports stacked screen transitions. When you push a Page onto the stack, it becomes the active Page, and the last Page pushed becomes the active Page. To push a Page, use `PushAsync()`, and to pop a Page, use `PopAsync()`.
+NavigationStack supports stacked screen transitions. Pages pushed onto the stack are stacked, and the last pushed Page becomes the active Page. You can push a Page using `PushAsync()` and pop using `PopAsync()`.
 
 ```cs
 INavigationStack navigationStack;
@@ -88,17 +80,21 @@ await navigationStack.PushAsync(page);
 await navigationStack.PopAsync();
 ```
 
-In NavigationStack, the Page lifecycle is handled as follows:
+You can also add NavigationStack-specific events to Pages by implementing `IPageStackEvent`.
 
-1. `OnInitialize` is called when pushing a Page.
-2. During transitions, `OnDisappear` is called for the previous Page and `OnAppear` for the new Page.
-3. `OnCleanup` is called when popping a Page.
+```cs
+public interface IPageStackEvent
+{
+    UniTask OnPush(NavigationContext context, CancellationToken cancellationToken = default);
+    UniTask OnPop(NavigationContext context, CancellationToken cancellationToken = default);
+}
+```
 
 ## NavigationSheet
 
-NavigationSheet supports tab-like switching between active Pages. Unlike NavigationStack, it does not maintain a history of Page transitions.
+NavigationSheet supports switching between active Pages, similar to tabs. Unlike NavigationStack, it does not keep a history of Page transitions.
 
-To use NavigationSheet, you need to add Pages with `AddAsync()` beforehand.
+You need to use `AddAsync()` to add Pages to the NavigationSheet.
 
 ```cs
 INavigationSheet navigationSheet;
@@ -126,78 +122,88 @@ await navigationSheet.RemoveAsync(page3);
 await navigationSheet.RemoveAllAsync();
 ```
 
-In NavigationSheet, the Page lifecycle is handled as follows:
+## NavigationContext
 
-1. `OnInitialize` is called when adding a Page.
-2. During transitions, `OnDisappear` is called for the previous Page and `OnAppear` for the new Page.
-3. `OnCleanup` is called when removing a Page.
+You can pass `NavigationContext` during Page transitions to pass data between Pages and specify transition options.
 
-## NavigationOptions
+### Passing Data
 
-When performing Page transitions using Navigation, you can pass `NavigationOptions`. If omitted, the options specified in the Navigation's `DefaultOptions` are applied.
-
-| Property | Description |
-| - | - |
-| Animated | Whether to play transition animations (default value is true) |
-| AwaitOpearion | Behavior when a transition operation is called again while a Page transition is in progress (default value is NavigationAwaitOperation.Error) |
-
-## Navigation Callbacks
-
-By implementing `INavigationCallbackReceiver`, you can add callbacks before and after each Page lifecycle event by adding objects to Navigation.
+You can pass data to the destination Page through `NavigationContext`.
 
 ```cs
-public interface INavigationCallbackReceiver
+var page = new ExamplePage();
+
+var context = new NavigationContext()
 {
-    void OnBeforeInitialize(IPage page) { }
-    void OnAfterInitialize(IPage page) { }
-    void OnBeforeCleanup(IPage page) { }
-    void OnAfterCleanup(IPage page) { }
-    void OnBeforeAppear(IPage page) { }
-    void OnAfterAppear(IPage page) { }
-    void OnBeforeDisappear(IPage page) { }
-    void OnAfterDisappear(IPage page) { }
+    Parameters = { { "id", "123456" } }
+};
+
+await navigationStack.PushAsync(page, context, cancellationToken);
+
+class ExamplePage : IPage
+{
+    public UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
+    {
+        var id = (string)context.Parameters["id"];
+
+        ...
+    }
+
+    ...
 }
 ```
 
+### NavigationOptions
+
+You can specify transition options using `NavigationOptions`.
+
 ```cs
-INavigationCallbackReceiver receiver;
-navigation.CallbackReveivers.Add(receiver);
+var context = new NavigationContext()
+{
+    Options = new NavigationOptions()
+    {
+        Animated = true,
+        AwaitOperation = NavigationAwaitOperation.Drop,
+    }
+};
+
+await navigationStack.PushAsync(page, context, cancellationToken);
 ```
+
+| Property       | Description                                                                                                                            |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Animated       | Specifies whether to play transition animations (default is true).                                                                     |
+| AwaitOperation | Specifies the behavior when a transition operation is called again during Page transition (default is NavigationAwaitOperation.Error). |
 
 ## Workflow for uGUI
 
-NavStack provides components for handling Pages and Navigation with uGUI by default.
-
 When using NavStack with uGUI, add the `Navigation Stack` / `Navigation Sheet` component to any object placed under the Canvas.
 
-<img src="https://github.com/AnnulusGames/NavStack/blob/main/docs/images/img-navigationstack-inspector.png" width="500">
-
-Next, create Pages to display UI. Define a component that inherits from the `Page` class.
+Next, create Pages for displaying UI. Implement a component that inherits from `IPage`.
 
 ```cs
-public class SamplePage1 : Page
+public class SamplePage1 : MonoBehaviour, IPage
 {
     [SerializeField] CanvasGroup canvasGroup;
 
-    // Override methods to customize events
-    protected override async UniTask OnAppearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
     {
-        if (!options.Animated)
+        if (!context.Options.Animated)
         {
             canvasGroup.alpha = 1f;
             return;
         }
 
-        // In this example, LitMotion is used to implement tween animations
+        // Example implementation using LitMotion for tween animations
         await LMotion.Create(0f, 1f, 0.25f)
             .WithEase(Ease.InQuad)
             .BindToCanvasGroupAlpha(canvasGroup)
             .ToUniTask(CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken, cancellationToken).Token);
     }
 
-    protected override async UniTask OnDisappearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
     {
-        if (!options.Animated)
+        if (!context.Options.Animated)
         {
             canvasGroup.alpha = 0f;
             return;
@@ -211,7 +217,7 @@ public class SamplePage1 : Page
 }
 ```
 
-It's convenient to manage Prefabs of created Pages. Prefab-ized Pages can be added to Navigation using `PushNewObjectAsync()` or `AddNewObjectAsync()`, allowing for the generation/destruction of objects based on the Page lifecycle.
+Prefab the created Page objects for convenience. By adding Prefabed Pages using `PushNewObjectAsync()` or `AddNewObjectAsync()`, you can manage object generation/destruction based on the Page lifecycle.
 
 ```cs
 Page prefab;
