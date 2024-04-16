@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace NavStack
+namespace NavStack.Internal
 {
-    internal sealed class NavigationStackCore
+    public sealed class NavigationStackCore
     {
         readonly ConcurrentStack<IPage> pageStack = new();
         public IReadOnlyCollection<IPage> Pages => pageStack;
@@ -14,8 +14,8 @@ namespace NavStack
         public IPage ActivePage => activePage;
         IPage activePage;
 
-        readonly List<INavigationCallbackReceiver> callbackReceivers = new();
-        public IList<INavigationCallbackReceiver> CallbackReceivers => callbackReceivers;
+        public event Action<IPage> OnPageAttached;
+        public event Action<IPage> OnPageDetached;
 
         bool isRunning;
 
@@ -44,16 +44,22 @@ namespace NavStack
             {
                 if (pageStack.Count == 0) throw new InvalidOperationException("Empty stack");
                 pageStack.TryPop(out var page);
+                if (page is IPageStackEvent stackEvent)
+                {
+                    await stackEvent.OnPop(copiedContext, cancellationToken);
+                }
                 pageStack.TryPeek(out activePage);
 
-                var task1 = NavigationHelper.InvokeOnDisappear(page, callbackReceivers, copiedContext, cancellationToken);
-                var task2 = activePage == null
-                    ? UniTask.CompletedTask
-                    : NavigationHelper.InvokeOnAppear(activePage, callbackReceivers, copiedContext, cancellationToken);
+                var task1 = page.OnNavigatedTo(copiedContext, cancellationToken);
+                var task2 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedFrom(copiedContext, cancellationToken);
 
                 await UniTask.WhenAll(task1, task2);
 
-                await NavigationHelper.InvokeOnCleanup(page, callbackReceivers, cancellationToken);
+                OnPageDetached?.Invoke(page);
+                if (page is IPageLifecycleEvent pageLifecycle)
+                {
+                    await pageLifecycle.OnDetached(cancellationToken);
+                }
             }
             finally
             {
@@ -65,7 +71,7 @@ namespace NavStack
         {
             var copiedContext = context.CreateCopy();
             copiedContext.Options = context.Options ?? navigation.DefaultOptions;
-            
+
             if (isRunning)
             {
                 switch (copiedContext.Options.AwaitOperation)
@@ -85,17 +91,25 @@ namespace NavStack
             try
             {
                 var page = await pageFactory();
-                await NavigationHelper.InvokeOnInitialize(page, callbackReceivers, cancellationToken);
 
-                var task1 = activePage == null
-                    ? UniTask.CompletedTask
-                    : NavigationHelper.InvokeOnDisappear(activePage, callbackReceivers, copiedContext, cancellationToken);
-                var task2 = NavigationHelper.InvokeOnAppear(page, callbackReceivers, copiedContext, cancellationToken);
-
-                await UniTask.WhenAll(task1, task2);
+                OnPageAttached?.Invoke(page);
+                if (page is IPageLifecycleEvent pageLifecycle)
+                {
+                    await pageLifecycle.OnAttached(cancellationToken);
+                }
 
                 pageStack.Push(page);
+                if (page is IPageStackEvent navigationStackEvent)
+                {
+                    await navigationStackEvent.OnPush(copiedContext, cancellationToken);
+                }
                 activePage = page;
+
+                var task1 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedTo(copiedContext, cancellationToken);
+                var task2 = activePage.OnNavigatedFrom(copiedContext, cancellationToken);
+                
+                await UniTask.WhenAll(task1, task2);
+
             }
             finally
             {

@@ -5,9 +5,7 @@ namespace NavStack
 {
     public interface IPageLifecycleEvent
     {
-        UniTask OnInitialize(CancellationToken cancellationToken = default) => UniTask.CompletedTask;
-        UniTask OnCleanup(CancellationToken cancellationToken = default) => UniTask.CompletedTask;
-        UniTask OnAppear(NavigationContext context, CancellationToken cancellationToken = default) => UniTask.CompletedTask;
-        UniTask OnDisappear(NavigationContext context, CancellationToken cancellationToken = default) => UniTask.CompletedTask;
+        UniTask OnAttached(CancellationToken cancellationToken = default);
+        UniTask OnDetached(CancellationToken cancellationToken = default);
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using NavStack.Internal;
 
 namespace NavStack.UI
 {
@@ -11,45 +12,21 @@ namespace NavStack.UI
     [RequireComponent(typeof(RectTransform))]
     public class NavigationStack : MonoBehaviour, INavigationStack
     {
-        sealed class CallbackReceiver : INavigationCallbackReceiver
-        {
-            public NavigationStack NavigationStack { get; set; }
-
-            public void OnAfterDisappear(IPage page)
-            {
-                if (!NavigationStack.togglePageActive) return;
-                if (page is Component component)
-                {
-                    component.gameObject.SetActive(false);
-                }
-            }
-
-            public void OnBeforeAppear(IPage page)
-            {
-                if (!NavigationStack.togglePageActive) return;
-                if (page is Component component)
-                {
-                    component.gameObject.SetActive(true);
-                }
-            }
-
-            public void OnAfterInitialize(IPage page)
-            {
-                if (page is Component component)
-                {
-                    if (NavigationStack.parentTransform != null)
-                    {
-                        component.transform.SetParent(NavigationStack.parentTransform, false);
-                    }
-                }
-            }
-        }
-
         [SerializeField] RectTransform parentTransform;
-        [SerializeField] bool togglePageActive = true;
         [SerializeField] NavigationOptions defaultOptions;
 
         readonly NavigationStackCore core = new();
+
+        public event Action<IPage> OnPageAttached
+        {
+            add => core.OnPageAttached += value;
+            remove => core.OnPageAttached -= value;
+        }
+        public event Action<IPage> OnPageDetached
+        {
+            add => core.OnPageDetached += value;
+            remove => core.OnPageDetached -= value;
+        }
 
         public IPage ActivePage => core.ActivePage;
         public IReadOnlyCollection<IPage> Pages => core.Pages;
@@ -58,11 +35,19 @@ namespace NavStack.UI
             get => defaultOptions;
             set => defaultOptions = value;
         }
-        public IList<INavigationCallbackReceiver> CallbackReceivers => core.CallbackReceivers;
 
         protected virtual void Awake()
         {
-            CallbackReceivers.Add(new CallbackReceiver() { NavigationStack = this });
+            OnPageAttached += page =>
+            {
+                if (page is Component component)
+                {
+                    if (parentTransform != null)
+                    {
+                        component.transform.SetParent(parentTransform, false);
+                    }
+                }
+            };
         }
 
         public UniTask PopAsync(NavigationContext context, CancellationToken cancellationToken = default)

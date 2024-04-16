@@ -19,7 +19,10 @@ namespace NavStack
             var instance = UnityEngine.Object.Instantiate(prefab);
             if (instance is Component component)
             {
-                instance.LifecycleEvents.Add(new DestroyObjectEvent(component.gameObject));
+                component.GetCancellationTokenOnDestroy().RegisterWithoutCaptureExecutionContext(instance =>
+                {
+                    if (instance != null) UnityEngine.Object.Destroy((UnityEngine.Object)instance);
+                }, instance);
             }
 
             return navigationSheet.AddAsync(instance, cancellationToken);
@@ -47,7 +50,15 @@ namespace NavStack
             var instance = UnityEngine.Object.Instantiate(resource);
             if (!TryGetComponent<IPage>(instance, out var page)) throw new Exception(); // TODO:
 
-            page.LifecycleEvents.Add(new ResourceUnloadEvent(page, resource, instance, resourceProvider));
+            void OnPageDetached(IPage pageDetached)
+            {
+                if (pageDetached != page) return;
+                if (instance != null) UnityEngine.Object.Destroy(instance);
+                resourceProvider.UnloadAsync(resource).Forget();
+                navigationSheet.OnPageDetached -= OnPageDetached;
+            }
+
+            navigationSheet.OnPageDetached += OnPageDetached;
 
             await navigationSheet.AddAsync(page, cancellationToken);
         }

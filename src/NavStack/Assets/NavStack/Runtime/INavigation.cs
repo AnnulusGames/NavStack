@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace NavStack
@@ -7,6 +8,7 @@ namespace NavStack
         IPage ActivePage { get; }
         IReadOnlyCollection<IPage> Pages { get; }
         NavigationOptions DefaultOptions { get; set; }
-        IList<INavigationCallbackReceiver> CallbackReceivers { get; }
+        event Action<IPage> OnPageAttached;
+        event Action<IPage> OnPageDetached;
     }
 }

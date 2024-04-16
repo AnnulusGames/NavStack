@@ -37,7 +37,7 @@ https://github.com/AnnulusGames/NavStack.git?path=src/NavStack/Assets/NavStack
 
 ## 基本的な概念
 
-NavStackにおいて、1つの画面は「Page」という単位に分割されます。Pageであるための要件は`IPage`インターフェースの実装のみであり、GameObjectやVisualElement、Sceneなど任意のものをPageとして表現することが可能です。(uGUI向けの実装が標準で用意されています。)
+NavStackにおいて、1つの画面は「Page」という単位に分割されます。Pageであるための要件は`IPage`インターフェースの実装のみであり、GameObjectやVisualElement、Sceneなど任意のものをPageとして表現することが可能です。
 
 Pageの遷移やライフサイクルの管理は「Navigation」が行います。NavStackではPageの遷移履歴をスタック可能な`INavigationStack`と、履歴を持たずアクティブなPageの切り替えのみを行う`INaviagtionSheet`の2種類が用意されています。
 
@@ -48,33 +48,32 @@ Pageの基本インターフェースである`IPage`は以下のような定義
 ```cs
 public interface IPage
 {
-    IList<IPageLifecycleEvent> LifecycleEvents { get; }
-
-    UniTask OnInitialize(CancellationToken cancellationToken = default);
-    UniTask OnAppear(NavigationOptions options, CancellationToken cancellationToken = default);
-    UniTask OnDisappear(NavigationOptions options, CancellationToken cancellationToken = default);
-    UniTask OnCleanup(CancellationToken cancellationToken = default);
+    UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default);
+    UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default);
 }
 ```
 
 | イベント | 説明 |
 | - | - |
-| OnInitialize | Pageの初期化時に1度だけ呼ばれるイベント。 |
-| OnAppear | Pageが表示されるたびに呼ばれるイベント。 |
-| OnDisappear | Pageが非表示になるたびに呼ばれるイベント。 |
-| OnCleanup | Pageの破棄時に1度だけ呼ばれるイベント。 |
+| OnNavigatedFrom | 他のPageから遷移してきた際に呼ばれる。 |
+| OnNavigatedTo | 他のPageへ遷移する際に呼ばれる。 |
 
-また`IPageLifecycleEvent`を実装したオブジェクトを追加することで、外部からライフサイクルイベントの登録を行うことも可能です。
+これをMonoBehaviourを継承したコンポーネント等で実装することでPageとして使用可能なViewを作成できます。
+
+また`IPageLifecycleEvent`を実装することで、Pageのライフサイクルイベントを追加することも可能です。
 
 ```cs
 public interface IPageLifecycleEvent
 {
-    UniTask OnInitialize(CancellationToken cancellationToken = default);
-    UniTask OnCleanup(CancellationToken cancellationToken = default);
-    UniTask OnAppear(NavigationOptions options, CancellationToken cancellationToken = default);
-    UniTask OnDisappear(NavigationOptions options, CancellationToken cancellationToken = default);
+    UniTask OnAttached(CancellationToken cancellationToken = default);
+    UniTask OnDetached(CancellationToken cancellationToken = default);
 }
 ```
+
+| イベント | 説明 |
+| - | - |
+| OnAttached | PageがNavigationに追加された際に呼ばれる。 |
+| OnDetached | PageがNavigationから削除された際に呼ばれる。 |
 
 ## NavigationStack
 
@@ -90,11 +89,15 @@ await navigationStack.PushAsync(page);
 await navigationStack.PopAsync();
 ```
 
-NavigationStackにおいて、Pageのライフサイクルは以下のように扱われます。
+また、Page側で`IPageStackEvent`を実装することで、NavigationStack用のイベントを追加することも可能です。
 
-1. Push時にOnInitializeが呼ばれる
-2. 遷移時には、遷移前のPageのOnDisappear、遷移後のPageのOnAppearが呼ばれる
-3. Pop時にOnCleanupが呼ばれる 
+```cs
+public interface IPageStackEvent
+{
+    UniTask OnPush(NavigationContext context, CancellationToken cancellationToken = default);
+    UniTask OnPop(NavigationContext context, CancellationToken cancellationToken = default);
+}
+```
 
 ## NavigationSheet
 
@@ -128,63 +131,75 @@ await navigationSheet.RemoveAsync(page3);
 await navigationSheet.RemoveAllAsync();
 ```
 
-NavigationSheetにおいて、Pageのライフサイクルは以下のように扱われます。
+## NavigationContext
 
-1. AddAsyncで追加時にOnInitializeが呼ばれる
-2. 遷移時には、遷移前のPageのOnDisappear、遷移後のPageのOnAppearが呼ばれる
-3. RemoveAsyncまたはRemoveAllAsyncで削除時にOnCleanupが呼ばれる
+Page間のデータの受け渡しやPage遷移のオプションの指定を行いたい場合、遷移時に`NavigationContext`を渡すことが可能です。
 
-## NavigationOptions
+### データの受け渡し
 
-Navigationを用いたPage遷移の際には`NavigationOptions`を渡すことが可能です。省略した場合にはNavigationの`DefaultOptions`のオプションが適用されます。
+`NavigationContext`を通じて遷移先のPageにデータを渡すことが可能です。
+
+```cs
+var page = new ExamplePage();
+
+var context = new NavigationContext()
+{
+    Parameters = { { "id", "123456" } }
+};
+
+await navigationStack.PushAsync(page, context, cancellationToken);
+
+class ExamplePage : IPage
+{
+    public UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
+    {
+        var id = (string)context.Parameters["id"];
+
+        ...
+    }
+
+    ...
+}
+```
+
+### NavigationOptions
+
+`NavigationOptions`を渡すことで遷移のオプションを指定できます。(省略した場合にはNavigationの`DefaultOptions`のオプションが適用されます。)
+
+```cs
+var context = new NavigationContext()
+{
+    Options = new NavigationOptions()
+    {
+        Animated = true,
+        AwaitOperation = NavigationAwaitOperation.Drop,
+    }
+};
+
+await navigationStack.PushAsync(page, context, cancellationToken);
+```
 
 | プロパティ | 説明 |
 | - | - |
 | Animated | 遷移アニメーションを再生するか (デフォルト値はtrue) |
 | AwaitOpearion | Pageの遷移中に再び遷移処理が呼ばれた際の挙動を指定する (デフォルト値はNavigationAwaitOperation.Error) |
 
-## Navigationコールバック
-
-`INavigationCallbackReceiver`を実装したオブジェクトをNavigationに追加することで、各Pageのライフサイクルイベントを呼び出す前後にコールバックを追加することが可能です。
-
-```cs
-public interface INavigationCallbackReceiver
-{
-    void OnBeforeInitialize(IPage page) { }
-    void OnAfterInitialize(IPage page) { }
-    void OnBeforeCleanup(IPage page) { }
-    void OnAfterCleanup(IPage page) { }
-    void OnBeforeAppear(IPage page) { }
-    void OnAfterAppear(IPage page) { }
-    void OnBeforeDisappear(IPage page) { }
-    void OnAfterDisappear(IPage page) { }
-}
-```
-
-```cs
-INavigationCallbackReceiver receiver;
-navigation.CallbackReveivers.Add(receiver);
-```
-
 ## uGUI向けのワークフロー
-
-NavStackでは、uGUIでPageとNavigationを扱うためのコンポーネントが標準で用意されています。
 
 uGUIでNavStackを使用する際は、Canvas以下に配置した任意のオブジェクトに`Navigation Stack` / `Navigation Sheet` コンポーネントを追加します。
 
 <img src="https://github.com/AnnulusGames/NavStack/blob/main/docs/images/img-navigationstack-inspector.png" width="500">
 
-次に、UIを表示するためのPageを作成します。`Page`クラスを継承したコンポーネントを定義します。
+次に、UIを表示するためのPageを作成します。`IPage`クラスを実装したコンポーネントを定義しましょう。
 
 ```cs
-public class SamplePage1 : Page
+public class SamplePage1 : MonoBehaviour, IPage
 {
     [SerializeField] CanvasGroup canvasGroup;
 
-    // メソッドをoverrideして独自のイベントを設定可能
-    protected override async UniTask OnAppearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
     {
-        if (!options.Animated)
+        if (!context.Options.Animated)
         {
             canvasGroup.alpha = 1f;
             return;
@@ -197,9 +212,9 @@ public class SamplePage1 : Page
             .ToUniTask(CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken, cancellationToken).Token);
     }
 
-    protected override async UniTask OnDisappearCore(NavigationOptions options, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
     {
-        if (!options.Animated)
+        if (!context.Options.Animated)
         {
             canvasGroup.alpha = 0f;
             return;
