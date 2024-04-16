@@ -1,6 +1,8 @@
 # NavStack
  Asynchronous screen transition/navigation for Unity.
 
+[日本語版READMEはこちら](README_JA.md)
+
 ## Overview
 
 NavStack is a library for managing screen transitions in Unity. It provides a foundation interface for asynchronous API-based screen transitions, as well as support for integration with uGUI and content management using Resources/Addressables.

@@ -1,6 +1,9 @@
 # NavStack
  Asynchronous screen transition/navigation for Unity.
 
+
+[English README is here.](README.md)
+
 ## 概要
 
 NavStackはUnityにおける画面遷移を管理するためのライブラリです。非同期APIで構築された画面遷移の基盤インターフェースを提供するほか、uGUIとの連携やResources/Addressablesを用いたコンテンツ管理などをサポートします。
