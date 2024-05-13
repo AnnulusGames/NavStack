@@ -50,8 +50,8 @@ namespace NavStack.Internal
                 }
                 pageStack.TryPeek(out activePage);
 
-                var task1 = page.OnNavigatedTo(copiedContext, cancellationToken);
-                var task2 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedFrom(copiedContext, cancellationToken);
+                var task1 = page.OnNavigatedFrom(copiedContext, cancellationToken);
+                var task2 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedTo(copiedContext, cancellationToken);
 
                 await UniTask.WhenAll(task1, task2);
 
@@ -105,8 +105,8 @@ namespace NavStack.Internal
                 }
                 activePage = page;
 
-                var task1 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedTo(copiedContext, cancellationToken);
-                var task2 = activePage.OnNavigatedFrom(copiedContext, cancellationToken);
+                var task1 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedFrom(copiedContext, cancellationToken);
+                var task2 = activePage.OnNavigatedTo(copiedContext, cancellationToken);
                 
                 await UniTask.WhenAll(task1, task2);
 
