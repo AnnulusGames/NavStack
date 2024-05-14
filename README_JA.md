@@ -58,8 +58,8 @@ public interface IPage
 
 | イベント | 説明 |
 | - | - |
-| OnNavigatedFrom | 他のPageから遷移してきた際に呼ばれる。 |
-| OnNavigatedTo | 他のPageへ遷移する際に呼ばれる。 |
+| OnNavigatedFrom | 他のPageへ遷移する際に呼ばれる。 |
+| OnNavigatedTo | 他のPageから遷移してきた際に呼ばれる。 |
 
 これをMonoBehaviourを継承したコンポーネント等で実装することでPageとして使用可能なViewを作成できます。
 
@@ -154,7 +154,7 @@ await navigationStack.PushAsync(page, context, cancellationToken);
 
 class ExamplePage : IPage
 {
-    public UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
+    public UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
     {
         var id = (string)context.Parameters["id"];
 
@@ -200,7 +200,7 @@ public class SamplePage1 : MonoBehaviour, IPage
 {
     [SerializeField] CanvasGroup canvasGroup;
 
-    public async UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
     {
         if (!context.Options.Animated)
         {
@@ -215,7 +215,7 @@ public class SamplePage1 : MonoBehaviour, IPage
             .ToUniTask(CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken, cancellationToken).Token);
     }
 
-    public async UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
     {
         if (!context.Options.Animated)
         {

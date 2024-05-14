@@ -144,7 +144,7 @@ await navigationStack.PushAsync(page, context, cancellationToken);
 
 class ExamplePage : IPage
 {
-    public UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
+    public UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
     {
         var id = (string)context.Parameters["id"];
 
@@ -188,7 +188,7 @@ public class SamplePage1 : MonoBehaviour, IPage
 {
     [SerializeField] CanvasGroup canvasGroup;
 
-    public async UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
     {
         if (!context.Options.Animated)
         {
@@ -203,7 +203,7 @@ public class SamplePage1 : MonoBehaviour, IPage
             .ToUniTask(CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken, cancellationToken).Token);
     }
 
-    public async UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
+    public async UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
     {
         if (!context.Options.Animated)
         {
