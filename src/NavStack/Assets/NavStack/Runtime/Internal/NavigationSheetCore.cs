@@ -85,12 +85,13 @@ namespace NavStack.Internal
                 var page = pages[index];
                 if (activePage == page) return;
 
-                var task1 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedFrom(copiedContext, cancellationToken);
-                var task2 = page.OnNavigatedTo(copiedContext, cancellationToken);
+                var prevPage = activePage;
+                activePage = page;
+
+                var task1 = prevPage == null ? UniTask.CompletedTask : prevPage.OnNavigatedFrom(copiedContext, cancellationToken);
+                var task2 = activePage.OnNavigatedTo(copiedContext, cancellationToken);
 
                 await UniTask.WhenAll(task1, task2);
-
-                activePage = page;
             }
             finally
             {
