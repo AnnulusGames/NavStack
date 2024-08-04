@@ -8,7 +8,7 @@ namespace NavStack
         public static void RegisterNavigation<T>(this IContainerBuilder builder, T navigation)
             where T : INavigation
         {
-            builder.RegisterInstance(navigation);
+            builder.RegisterInstance(navigation).AsImplementedInterfaces();
             builder.RegisterBuildCallback(resolver =>
             {
                 navigation.OnPageAttached += page =>
