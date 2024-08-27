@@ -13,7 +13,7 @@ namespace NavStack.UI
     public class NavigationSheet : MonoBehaviour, INavigationSheet
     {
         [SerializeField] RectTransform parentTransform;
-        [SerializeField] NavigationOptions defaultOptions;
+        [SerializeField] SerializableNavigationOptions defaultOptions;
 
         readonly NavigationSheetCore core = new();
 
@@ -32,8 +32,8 @@ namespace NavStack.UI
         public IPage ActivePage => core.ActivePage;
         public NavigationOptions DefaultOptions
         {
-            get => defaultOptions;
-            set => defaultOptions = value;
+            get => defaultOptions.ToNavigationOptions();
+            set => defaultOptions = new(value);
         }
 
         protected virtual void Awake()
