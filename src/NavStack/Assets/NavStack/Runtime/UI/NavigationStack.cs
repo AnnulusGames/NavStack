@@ -22,10 +22,23 @@ namespace NavStack.UI
             add => core.OnPageAttached += value;
             remove => core.OnPageAttached -= value;
         }
+
         public event Action<IPage> OnPageDetached
         {
             add => core.OnPageDetached += value;
             remove => core.OnPageDetached -= value;
+        }
+
+        public event Action<(IPage Previous, IPage Current)> OnNavigated
+        {
+            add => core.OnNavigated += value;
+            remove => core.OnNavigated -= value;
+        }
+
+        public event Action<(IPage Previous, IPage Current)> OnNavigating
+        {
+            add => core.OnNavigating += value;
+            remove => core.OnNavigating -= value;
         }
 
         public IPage ActivePage => core.ActivePage;

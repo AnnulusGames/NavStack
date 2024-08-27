@@ -16,6 +16,8 @@ namespace NavStack.Internal
 
         public event Action<IPage> OnPageAttached;
         public event Action<IPage> OnPageDetached;
+        public event Action<(IPage Previous, IPage Current)> OnNavigating;
+        public event Action<(IPage Previous, IPage Current)> OnNavigated;
 
         bool isRunning;
 
@@ -45,6 +47,7 @@ namespace NavStack.Internal
             try
             {
                 if (pageStack.Count == 0) throw new InvalidOperationException("Empty stack");
+
                 pageStack.TryPop(out var page);
                 if (page is IPageStackEvent stackEvent)
                 {
@@ -55,9 +58,13 @@ namespace NavStack.Internal
                 var task1 = page.OnNavigatedFrom(copiedContext, cancellationToken);
                 var task2 = activePage == null ? UniTask.CompletedTask : activePage.OnNavigatedTo(copiedContext, cancellationToken);
 
+                OnNavigating?.Invoke((page, activePage));
+
                 await UniTask.WhenAll(task1, task2);
 
+                OnNavigated?.Invoke((page, activePage));
                 OnPageDetached?.Invoke(page);
+
                 if (page is IPageLifecycleEvent pageLifecycle)
                 {
                     await pageLifecycle.OnDetached(cancellationToken);
@@ -113,9 +120,12 @@ namespace NavStack.Internal
 
                 var task1 = prevPage == null ? UniTask.CompletedTask : prevPage.OnNavigatedFrom(copiedContext, cancellationToken);
                 var task2 = activePage.OnNavigatedTo(copiedContext, cancellationToken);
-                
+
+                OnNavigating?.Invoke((prevPage, activePage));
+
                 await UniTask.WhenAll(task1, task2);
 
+                OnNavigated?.Invoke((prevPage, activePage));
             }
             finally
             {

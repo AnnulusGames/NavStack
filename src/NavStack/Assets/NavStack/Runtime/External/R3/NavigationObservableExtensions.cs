@@ -23,6 +23,24 @@ namespace NavStack
                 cancellationToken
             );
         }
+
+        public static Observable<(IPage Previous, IPage Current)> OnNavigatingAsObservable(this INavigation navigation, CancellationToken cancellationToken = default)
+        {
+            return Observable.FromEvent<(IPage, IPage)>(
+                h => navigation.OnNavigating += h,
+                h => navigation.OnNavigating -= h,
+                cancellationToken
+            );
+        }
+
+        public static Observable<(IPage Previous, IPage Current)> OnNavigatedAsObservable(this INavigation navigation, CancellationToken cancellationToken = default)
+        {
+            return Observable.FromEvent<(IPage, IPage)>(
+                h => navigation.OnNavigated += h,
+                h => navigation.OnNavigated -= h,
+                cancellationToken
+            );
+        }
     }
 }
 #endif
