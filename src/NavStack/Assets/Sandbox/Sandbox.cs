@@ -7,7 +7,7 @@ using R3;
 
 public class Sandbox : MonoBehaviour
 {
-    [SerializeField] NavigationStack navigation;
+    [SerializeField] NavigationStackUI navigation;
 
     void Start()
     {

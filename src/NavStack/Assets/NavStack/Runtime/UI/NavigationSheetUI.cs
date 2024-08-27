@@ -8,13 +8,13 @@ using NavStack.Internal;
 
 namespace NavStack.UI
 {
-    [AddComponentMenu("NavStack/Navigation Stack")]
+    [AddComponentMenu("NavStack/Navigation Sheet UI")]
     [RequireComponent(typeof(RectTransform))]
-    public class NavigationStack : MonoBehaviour, INavigationStack
+    public class NavigationSheetUI : MonoBehaviour, INavigationSheet
     {
         [SerializeField] RectTransform parentTransform;
 
-        readonly NavigationStackCore core = new();
+        readonly NavigationSheetCore core = new();
 
         public event Action<IPage> OnPageAttached
         {
@@ -40,8 +40,8 @@ namespace NavStack.UI
             remove => core.OnNavigating -= value;
         }
 
-        public IPage ActivePage => core.ActivePage;
         public IReadOnlyCollection<IPage> Pages => core.Pages;
+        public IPage ActivePage => core.ActivePage;
 
         protected virtual void Awake()
         {
@@ -57,19 +57,29 @@ namespace NavStack.UI
             };
         }
 
-        public UniTask PopAsync(NavigationContext context, CancellationToken cancellationToken = default)
+        public UniTask AddAsync(IPage page, CancellationToken cancellationToken = default)
         {
-            return core.PopAsync(context, cancellationToken);
+            return core.AddAsync(page, cancellationToken);
         }
 
-        public UniTask PushAsync(IPage page, NavigationContext context, CancellationToken cancellationToken = default)
+        public UniTask RemoveAsync(IPage page, CancellationToken cancellationToken = default)
         {
-            return core.PushAsync(() => new(page), context, cancellationToken);
+            return core.RemoveAsync(page, cancellationToken);
         }
 
-        public UniTask PushAsync(Func<UniTask<IPage>> factory, NavigationContext context, CancellationToken cancellationToken = default)
+        public UniTask RemoveAllAsync(CancellationToken cancellationToken = default)
         {
-            return core.PushAsync(factory, context, cancellationToken);
+            return core.RemoveAllAsync(cancellationToken);
+        }
+
+        public UniTask ShowAsync(int index, NavigationContext context, CancellationToken cancellationToken = default)
+        {
+            return core.ShowAsync(index, context, cancellationToken);
+        }
+
+        public UniTask HideAsync(NavigationContext context, CancellationToken cancellationToken = default)
+        {
+            return core.HideAsync(context, cancellationToken);
         }
     }
 }
