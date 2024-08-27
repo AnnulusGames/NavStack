@@ -17,7 +17,7 @@ public class SamplePage1 : MonoBehaviour, IPage, IPageStackEvent
     {
         text.text = context.Parameters["id"] as string;
 
-        if (!context.Options.Animated)
+        if (context.Parameters.ContainsKey("DisableAnimation"))
         {
             transform.localScale = Vector3.one;
             return;
@@ -31,7 +31,7 @@ public class SamplePage1 : MonoBehaviour, IPage, IPageStackEvent
 
     public async UniTask OnPop(NavigationContext context, CancellationToken cancellationToken = default)
     {
-        if (!context.Options.Animated)
+        if (context.Parameters.ContainsKey("DisableAnimation"))
         {
             transform.localScale = Vector3.zero;
             return;
