@@ -69,13 +69,13 @@ namespace NavStack.Internal
             {
                 switch (copiedContext.AwaitOperation)
                 {
-                    case NavigationAwaitOperation.Error:
-                        throw new InvalidOperationException("Navigation is currently in transition.");
-                    case NavigationAwaitOperation.WaitForCompletion:
+                    case NavigationAwaitOperation.Sequential:
                         await UniTask.WaitWhile(() => isRunning, cancellationToken: cancellationToken);
                         break;
                     case NavigationAwaitOperation.Drop:
                         return;
+                    case NavigationAwaitOperation.Error:
+                        throw new InvalidOperationException("Navigation is currently in transition.");
                 }
             }
 
@@ -117,13 +117,13 @@ namespace NavStack.Internal
             {
                 switch (copiedContext.AwaitOperation)
                 {
-                    case NavigationAwaitOperation.Error:
-                        throw new InvalidOperationException("Navigation is currently in transition.");
-                    case NavigationAwaitOperation.WaitForCompletion:
+                    case NavigationAwaitOperation.Sequential:
                         await UniTask.WaitWhile(() => isRunning, cancellationToken: cancellationToken);
                         break;
                     case NavigationAwaitOperation.Drop:
                         return;
+                    case NavigationAwaitOperation.Error:
+                        throw new InvalidOperationException("Navigation is currently in transition.");
                 }
             }
 
