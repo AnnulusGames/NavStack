@@ -13,7 +13,7 @@ namespace NavStack.UI
     public class NavigationStack : MonoBehaviour, INavigationStack
     {
         [SerializeField] RectTransform parentTransform;
-        [SerializeField] NavigationOptions defaultOptions;
+        [SerializeField] SerializableNavigationOptions defaultOptions;
 
         readonly NavigationStackCore core = new();
 
@@ -32,8 +32,8 @@ namespace NavStack.UI
         public IReadOnlyCollection<IPage> Pages => core.Pages;
         public NavigationOptions DefaultOptions
         {
-            get => defaultOptions;
-            set => defaultOptions = value;
+            get => defaultOptions.ToNavigationOptions();
+            set => defaultOptions = new(value);
         }
 
         protected virtual void Awake()
