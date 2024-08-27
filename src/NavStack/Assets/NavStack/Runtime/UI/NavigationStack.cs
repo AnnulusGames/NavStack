@@ -13,7 +13,6 @@ namespace NavStack.UI
     public class NavigationStack : MonoBehaviour, INavigationStack
     {
         [SerializeField] RectTransform parentTransform;
-        [SerializeField] SerializableNavigationOptions defaultOptions;
 
         readonly NavigationStackCore core = new();
 
@@ -43,11 +42,6 @@ namespace NavStack.UI
 
         public IPage ActivePage => core.ActivePage;
         public IReadOnlyCollection<IPage> Pages => core.Pages;
-        public NavigationOptions DefaultOptions
-        {
-            get => defaultOptions.ToNavigationOptions();
-            set => defaultOptions = new(value);
-        }
 
         protected virtual void Awake()
         {
@@ -65,17 +59,17 @@ namespace NavStack.UI
 
         public UniTask PopAsync(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.PopAsync(this, context, cancellationToken);
+            return core.PopAsync(context, cancellationToken);
         }
 
         public UniTask PushAsync(IPage page, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.PushAsync(this, () => new(page), context, cancellationToken);
+            return core.PushAsync(() => new(page), context, cancellationToken);
         }
 
         public UniTask PushAsync(Func<UniTask<IPage>> factory, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.PushAsync(this, factory, context, cancellationToken);
+            return core.PushAsync(factory, context, cancellationToken);
         }
     }
 }

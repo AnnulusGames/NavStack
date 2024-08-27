@@ -13,7 +13,6 @@ namespace NavStack.UI
     public class NavigationSheet : MonoBehaviour, INavigationSheet
     {
         [SerializeField] RectTransform parentTransform;
-        [SerializeField] SerializableNavigationOptions defaultOptions;
 
         readonly NavigationSheetCore core = new();
 
@@ -43,11 +42,6 @@ namespace NavStack.UI
 
         public IReadOnlyCollection<IPage> Pages => core.Pages;
         public IPage ActivePage => core.ActivePage;
-        public NavigationOptions DefaultOptions
-        {
-            get => defaultOptions.ToNavigationOptions();
-            set => defaultOptions = new(value);
-        }
 
         protected virtual void Awake()
         {
@@ -80,12 +74,12 @@ namespace NavStack.UI
 
         public UniTask ShowAsync(int index, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.ShowAsync(this, index, context, cancellationToken);
+            return core.ShowAsync(index, context, cancellationToken);
         }
 
         public UniTask HideAsync(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return core.HideAsync(this, context, cancellationToken);
+            return core.HideAsync(context, cancellationToken);
         }
     }
 }

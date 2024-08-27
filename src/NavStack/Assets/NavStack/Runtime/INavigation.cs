@@ -7,7 +7,6 @@ namespace NavStack
     {
         IPage ActivePage { get; }
         IReadOnlyCollection<IPage> Pages { get; }
-        NavigationOptions DefaultOptions { get; set; }
         event Action<IPage> OnPageAttached;
         event Action<IPage> OnPageDetached;
         event Action<(IPage Previous, IPage Current)> OnNavigating;

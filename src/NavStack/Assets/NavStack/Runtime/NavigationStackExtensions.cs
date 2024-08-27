@@ -53,11 +53,7 @@ namespace NavStack
 
         public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, IResourceProvider resourceProvider, CancellationToken cancellationToken = default)
         {
-            var context = new NavigationContext
-            {
-                Options = navigationStack.DefaultOptions
-            };
-
+            var context = new NavigationContext();
             return PushNewObjectAsync(navigationStack, key, resourceProvider, context, cancellationToken);
         }
 

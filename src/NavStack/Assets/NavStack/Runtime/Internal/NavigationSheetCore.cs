@@ -61,16 +61,13 @@ namespace NavStack.Internal
             return UniTask.WhenAll(array);
         }
 
-        public async UniTask ShowAsync(INavigation navigation, int index, NavigationContext context, CancellationToken cancellationToken = default)
+        public async UniTask ShowAsync(int index, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context with
-            { 
-                Options = context.Options ?? navigation.DefaultOptions
-            };
+            var copiedContext = context with { };
 
             if (isRunning)
             {
-                switch (copiedContext.Options.AwaitOperation)
+                switch (copiedContext.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");
@@ -107,12 +104,9 @@ namespace NavStack.Internal
             }
         }
 
-        public async UniTask HideAsync(INavigation navigation, NavigationContext context, CancellationToken cancellationToken = default)
+        public async UniTask HideAsync(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context with
-            {
-                Options = context.Options ?? navigation.DefaultOptions
-            };
+            var copiedContext = context with { };
 
             if (activePage == null)
             {
@@ -121,7 +115,7 @@ namespace NavStack.Internal
 
             if (isRunning)
             {
-                switch (copiedContext.Options.AwaitOperation)
+                switch (copiedContext.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");
