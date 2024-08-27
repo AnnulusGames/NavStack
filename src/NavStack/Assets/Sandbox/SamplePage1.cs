@@ -42,4 +42,9 @@ public class SamplePage1 : MonoBehaviour, IPage, IPageStackEvent
             .BindToLocalScale(transform)
             .ToUniTask(CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken, cancellationToken).Token);
     }
+
+    internal string GetCurrentText()
+    {
+        return text.text;
+    }
 }
