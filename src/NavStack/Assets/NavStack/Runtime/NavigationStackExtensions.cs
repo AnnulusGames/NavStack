@@ -43,25 +43,26 @@ namespace NavStack
 
         public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, CancellationToken cancellationToken = default)
         {
-            return PushNewObjectAsync(navigationStack, key, ResourceProvider.DefaultResourceProvider, cancellationToken);
+            return PushNewObjectAsync(navigationStack, key, new NavigationContext(), cancellationToken: cancellationToken);
         }
 
-        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, NavigationContext context, CancellationToken cancellationToken = default)
-        {
-            return PushNewObjectAsync(navigationStack, key, ResourceProvider.DefaultResourceProvider, context, cancellationToken);
-        }
-
-        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, IResourceProvider resourceProvider, CancellationToken cancellationToken = default)
-        {
-            var context = new NavigationContext();
-            return PushNewObjectAsync(navigationStack, key, resourceProvider, context, cancellationToken);
-        }
-
-        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, IResourceProvider resourceProvider, NavigationContext context, CancellationToken cancellationToken = default)
+        public static UniTask PushNewObjectAsync(this INavigationStack navigationStack, string key, NavigationContext context, IResourceProvider resourceProvider = null, bool loadAsync = true, CancellationToken cancellationToken = default)
         {
             return navigationStack.PushAsync(async () =>
             {
-                var resource = await resourceProvider.LoadAsync<UnityEngine.Object>(key, cancellationToken);
+                resourceProvider ??= ResourceProvider.DefaultResourceProvider;
+
+                UnityEngine.Object resource;
+
+                if (loadAsync)
+                {
+                    resource = await resourceProvider.LoadAsync<UnityEngine.Object>(key, cancellationToken);
+                }
+                else
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    resource = resourceProvider.Load<UnityEngine.Object>(key);
+                }
 
                 var instance = UnityEngine.Object.Instantiate(resource);
                 if (!TryGetComponent<IPage>(instance, out var page)) throw new Exception(); // TODO:
