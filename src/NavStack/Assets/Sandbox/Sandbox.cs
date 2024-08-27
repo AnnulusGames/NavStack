@@ -36,7 +36,8 @@ public class Sandbox : MonoBehaviour
         {
             var context = new NavigationContext();
             context.Parameters["id"] = "user" + Random.Range(0, 100);
-            navigation.PushNewObjectAsync("SamplePage1", ResourceProvider.Addressables, context, destroyCancellationToken).Forget();
+            navigation.PushNewObjectAsync("SamplePage1", context, ResourceProvider.Addressables, false, destroyCancellationToken).Forget();
+            Debug.Break();
         }
 
         if (Input.GetKeyDown(KeyCode.Backspace))
