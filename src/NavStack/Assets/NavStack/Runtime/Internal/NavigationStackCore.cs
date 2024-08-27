@@ -21,8 +21,10 @@ namespace NavStack.Internal
 
         public async UniTask PopAsync(INavigation navigation, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context.CreateCopy();
-            copiedContext.Options = context.Options ?? navigation.DefaultOptions;
+            var copiedContext = context with
+            {
+                Options = context.Options ?? navigation.DefaultOptions
+            };
 
             if (isRunning)
             {
@@ -69,8 +71,10 @@ namespace NavStack.Internal
 
         public async UniTask PushAsync(INavigation navigation, Func<UniTask<IPage>> pageFactory, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context.CreateCopy();
-            copiedContext.Options = context.Options ?? navigation.DefaultOptions;
+            var copiedContext = context with
+            {
+                Options = context.Options ?? navigation.DefaultOptions
+            };
 
             if (isRunning)
             {

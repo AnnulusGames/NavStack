@@ -61,8 +61,10 @@ namespace NavStack.Internal
 
         public async UniTask ShowAsync(INavigation navigation, int index, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context.CreateCopy();
-            copiedContext.Options = context.Options ?? navigation.DefaultOptions;
+            var copiedContext = context with
+            { 
+                Options = context.Options ?? navigation.DefaultOptions
+            };
 
             if (isRunning)
             {
@@ -101,8 +103,10 @@ namespace NavStack.Internal
 
         public async UniTask HideAsync(INavigation navigation, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context.CreateCopy();
-            copiedContext.Options = context.Options ?? navigation.DefaultOptions;
+            var copiedContext = context with
+            {
+                Options = context.Options ?? navigation.DefaultOptions
+            };
 
             if (activePage == null)
             {
