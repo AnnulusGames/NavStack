@@ -21,16 +21,13 @@ namespace NavStack.Internal
 
         bool isRunning;
 
-        public async UniTask PopAsync(INavigation navigation, NavigationContext context, CancellationToken cancellationToken = default)
+        public async UniTask PopAsync(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context with
-            {
-                Options = context.Options ?? navigation.DefaultOptions
-            };
+            var copiedContext = context with { };
 
             if (isRunning)
             {
-                switch (copiedContext.Options.AwaitOperation)
+                switch (copiedContext.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");
@@ -76,16 +73,13 @@ namespace NavStack.Internal
             }
         }
 
-        public async UniTask PushAsync(INavigation navigation, Func<UniTask<IPage>> pageFactory, NavigationContext context, CancellationToken cancellationToken = default)
+        public async UniTask PushAsync(Func<UniTask<IPage>> pageFactory, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var copiedContext = context with
-            {
-                Options = context.Options ?? navigation.DefaultOptions
-            };
+            var copiedContext = context with { };
 
             if (isRunning)
             {
-                switch (copiedContext.Options.AwaitOperation)
+                switch (copiedContext.AwaitOperation)
                 {
                     case NavigationAwaitOperation.Error:
                         throw new InvalidOperationException("Navigation is currently in transition.");

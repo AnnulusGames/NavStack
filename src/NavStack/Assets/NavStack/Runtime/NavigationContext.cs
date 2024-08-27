@@ -2,7 +2,7 @@ namespace NavStack
 {
     public record NavigationContext
     {
-        public NavigationOptions Options { get; init; }
+        public NavigationAwaitOperation AwaitOperation { get; init; } = NavigationAwaitOperation.Error;
         public NavigationParameters Parameters { get; init; } = new();
     }
 }
