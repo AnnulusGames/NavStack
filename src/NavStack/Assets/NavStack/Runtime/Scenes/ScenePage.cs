@@ -24,6 +24,7 @@ namespace NavStack.Scenes
         }
 
         public bool SetActiveOnNavigated { get; set; } = true;
+        public bool LoadAsync { get; set; } = true;
         
         public bool AllowSceneActivation
         {
@@ -60,10 +61,17 @@ namespace NavStack.Scenes
         {
             Assert.IsNull(asyncOperation);
 
-            asyncOperation = SceneManager.LoadSceneAsync(scene.buildIndex, LoadSceneMode.Additive);
-            asyncOperation.allowSceneActivation = allowSceneActivation;
-            await asyncOperation.ToUniTask(cancellationToken: cancellationToken);
-            
+            if (LoadAsync)
+            {
+                asyncOperation = SceneManager.LoadSceneAsync(scene.buildIndex, LoadSceneMode.Additive);
+                asyncOperation.allowSceneActivation = allowSceneActivation;
+                await asyncOperation.ToUniTask(cancellationToken: cancellationToken);
+            }
+            else
+            {
+                SceneManager.LoadScene(scene.buildIndex, LoadSceneMode.Additive);
+            }
+
             if (SetActiveOnNavigated)
             {
                 SceneManager.SetActiveScene(scene);
