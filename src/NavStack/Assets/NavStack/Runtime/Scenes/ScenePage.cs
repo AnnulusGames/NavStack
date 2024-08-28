@@ -1,5 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
 
 namespace NavStack.Scenes
@@ -21,26 +23,53 @@ namespace NavStack.Scenes
             this.scene = scene;
         }
 
-        Scene scene;
-        public Scene Scene => scene;
+        public bool SetActiveOnNavigated { get; set; } = true;
+        
+        public bool AllowSceneActivation
+        {
+            get
+            {
+                return allowSceneActivation;
+            }
+            set
+            {
+                allowSceneActivation = value;
+                if (asyncOperation != null) asyncOperation.allowSceneActivation = value;
+            }
+        }
 
-        public bool SetActiveOnNavigated { get; init; } = true;
+        public Scene Scene => scene;
+        public float Progress => asyncOperation == null ? 0f : asyncOperation.progress;
+
+        Scene scene;
+        bool allowSceneActivation;
+        AsyncOperation asyncOperation;
 
         public async UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var asyncOperation = SceneManager.UnloadSceneAsync(scene.buildIndex);
+            Assert.IsNull(asyncOperation);
+
+            asyncOperation = SceneManager.UnloadSceneAsync(scene.buildIndex);
+            asyncOperation.allowSceneActivation = allowSceneActivation;
             await asyncOperation.ToUniTask(cancellationToken: cancellationToken);
+
+            asyncOperation = null;
         }
 
         public async UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            var asyncOperation = SceneManager.LoadSceneAsync(scene.buildIndex, LoadSceneMode.Additive);
+            Assert.IsNull(asyncOperation);
+
+            asyncOperation = SceneManager.LoadSceneAsync(scene.buildIndex, LoadSceneMode.Additive);
+            asyncOperation.allowSceneActivation = allowSceneActivation;
             await asyncOperation.ToUniTask(cancellationToken: cancellationToken);
             
             if (SetActiveOnNavigated)
             {
                 SceneManager.SetActiveScene(scene);
             }
+
+            asyncOperation = null;
         }
     }
 }
