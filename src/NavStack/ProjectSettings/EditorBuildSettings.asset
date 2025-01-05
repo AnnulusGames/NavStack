@@ -8,6 +8,16 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Sandbox/Sandbox.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Sandbox/Scenes/SceneA.unity
+    guid: 276cd16a045e9469b8297762e054277b
+  - enabled: 1
+    path: Assets/Sandbox/Scenes/SceneB.unity
+    guid: 4ca0a2d3d4f864587b5e93fd72460474
+  - enabled: 1
+    path: Assets/Sandbox/Scenes/SceneSandbox.unity
+    guid: f9166d43259da4135bbd4fdc9f9c10c4
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 426e2deca12c649cf8f85303c969733e,
       type: 2}
+  m_UseUCBPForAssetBundles: 0
