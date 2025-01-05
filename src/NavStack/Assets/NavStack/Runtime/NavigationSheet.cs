@@ -54,12 +54,12 @@ namespace NavStack
 
         public UniTask RemoveAsync(IPage page, CancellationToken cancellationToken = default)
         {
-            return RemoveAsync(page, cancellationToken);
+            return core.RemoveAsync(page, cancellationToken);
         }
 
         public UniTask ShowAsync(int index, NavigationContext context, CancellationToken cancellationToken = default)
         {
-            return ShowAsync(index, context, cancellationToken);
+            return core.ShowAsync(index, context, cancellationToken);
         }
     }
 }
