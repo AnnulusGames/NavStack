@@ -15,43 +15,42 @@ namespace NavStack.Scenes
         readonly SceneLoadType loadType;
         readonly int buildIndex;
         readonly string sceneName;
-        readonly bool useNavigationEvent;
 
-        public ScenePage(int buildIndex, bool useNavigationEvent)
+        public bool LoadOnAttached { get; init; } = false;
+
+        public ScenePage(int buildIndex)
         {
             loadType = SceneLoadType.BuildIndex;
             this.buildIndex = buildIndex;
-            this.useNavigationEvent = useNavigationEvent;
         }
 
-        public ScenePage(string sceneName, bool useLifecycleEvent)
+        public ScenePage(string sceneName)
         {
             loadType = SceneLoadType.SceneName;
             this.sceneName = sceneName;
-            this.useNavigationEvent = useLifecycleEvent;
         }
-        
+
         public UniTask OnNavigatedFrom(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            if (useNavigationEvent) return UniTask.CompletedTask;
+            if (LoadOnAttached) return UniTask.CompletedTask;
             return UnloadAsync(cancellationToken);
         }
 
         public UniTask OnNavigatedTo(NavigationContext context, CancellationToken cancellationToken = default)
         {
-            if (useNavigationEvent) return UniTask.CompletedTask;
+            if (LoadOnAttached) return UniTask.CompletedTask;
             return LoadAsync(cancellationToken);
         }
 
         public UniTask OnAttached(CancellationToken cancellationToken = default)
         {
-            if (!useNavigationEvent) return UniTask.CompletedTask;
+            if (!LoadOnAttached) return UniTask.CompletedTask;
             return LoadAsync(cancellationToken);
         }
 
         public UniTask OnDetached(CancellationToken cancellationToken = default)
         {
-            if (!useNavigationEvent) return UniTask.CompletedTask;
+            if (!LoadOnAttached) return UniTask.CompletedTask;
             return UnloadAsync(cancellationToken);
         }
 
